@@ -1,5 +1,113 @@
 ---
-site: blogdown:::blogdown_site
+title: Worth a Shot? NFL QBs and the Covid Vaccine
+author: Noah Landis
+date: '2022-04-08'
+slug: worth-a-shot-nfl-qbs-and-the-covid-vaccine
+categories: []
+tags: []
 ---
 
-<!-- This file is for blogdown only. Please do not edit it. -->
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(scales)
+library(waffle)
+library(ggrepel)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+PassingStats <- read_csv("NflPass21.csv")
+
+
+
+QBs <- PassingStats %>% filter(Pos == "QB") %>% filter(GS >= 10)
+
+VaxxedQBs <- QBs %>% filter (`Vaxx Status` == "Yes")
+UnVaxxedQBs <- QBs %>% filter (`Vaxx Status` == "No")
+UnkQBs <- QBs %>% filter (`Vaxx Status` == "Unk")
+GoodQBs <- QBs %>% filter(Yds...12 >4000) %>% filter(Rate >95)
+```
+During the course of the 2021 NFL season one of the biggest topics of debate was surrounding the vaccination status of players. With strict guidelines and protocols put in place by the NFL many players opted to receive the shot. However, not every player ended up getting the vaccine. Some notable unvaccinated players include Aaron Rodgers, Lamar Jackson, Deandre Hopkins, Adam Thielen and Joe Mixon.
+
+Many people tend to agree that Quarterback is the most important position on a football team. With some big name quarterbacks opting to not take the vaccine, some might wonder if the Covid vaccine has any effect on player performance.
+```{r message=FALSE, warning=FALSE, echo=FALSE, fig.width=5, fig.height=7}
+ggplot() +
+ geom_bar(data=QBs, aes(x=reorder(Player, GS), weight=GS, fill=`Vaxx Status`)) + 
+  coord_flip() +
+  scale_fill_manual(values = c("red","blue","green"))+
+labs(
+title = "Who got the shot?",
+subtitle = "NFL QBs sorted by vaccination status and number of starts on the season",
+x = "Player Name",
+y = "Number of Games Started",
+caption = "Source: Pro Football Reference | By Noah Landis"
+)+
+theme_minimal()+ 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    
+  )
+```
+Using a cutoff of 10 started games you get a list of 31 quarterbacks. You might be asking yourself, aren't there 32 teams in the NFL and the answer is yes, however, the New Orleans Saints sent out three different starting quarterbacks this season and none eclipsed the 10 game minimum.
+
+Of the 31 included quarterbacks on the list 20 were vaccinated and 5 were not vaccinated. The remaining 6 quarterbacks' vaccination status could not be verified.
+
+But how do they stack up on the field? Are there any glaring disparities in statistics?
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+ggplot() +
+geom_point(data=QBs, aes(x=Rate, y=Yds...12)) +
+geom_smooth(data=QBs, aes(x=Rate, y=Yds...12), method="lm",se=FALSE) + geom_point(data=UnVaxxedQBs, aes(x=Rate, y=Yds...12), color="Red") + geom_point(data=VaxxedQBs, aes(x=Rate, y=Yds...12),color="Green") +
+geom_text_repel(data=GoodQBs, aes(x=Rate, y=Yds...12, label=Player),size=2.5) + 
+  labs(
+    x="Season Passer Rating", 
+    y="Season Passing Yards", 
+    title="QBs are all over the board", 
+    subtitle="Tom Brady and Aaron Rodgers rise to the top of the metrics.", 
+    caption="Source: Pro Football Reference | Noah Landis"
+    ) +
+  theme_minimal()+ 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+There is no sign vaccination status having an affect on performance. There is no clump of one vaccination status anywhere on the chart. Aaron Rodgers led the league in passer rating while Tom Brady led the league in passing yards. The 6 other quarterbacks listed all had over 4000 passing yards and a passer rating over 95.
+
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+TDs <- c("Vaccinated"=459, "Unvaccinated"=132, "Unknown"=134)
+
+waffle(TDs/2,
+rows = 10,
+xlab="1 square = 2 TD",
+colors = c("green", "red", "blue")
+) + labs(
+  title ="Vaccinated QBs dominate the field",
+  subtitle = "QBs with the shot account for 63% of Passing TDs from Starting QBs",
+  caption="Source: Pro Football Reference | Noah Landis"
+)
+```
+While it may look like vaccinated quarterbacks are outperforming the other groups you have to remember to take in account the volume of the stats. The amount of vaccinated quarterbacks is nearly double that of the unvaccinated and unknown status quarterbacks. 
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+PassingYds <- c("Vaccinated"=71965, "Unvaccinated"=19543, "Unknown"=21539)
+
+waffle(PassingYds/1000,
+rows = 10,
+xlab="1 square = 1000 Yards",
+colors = c("green", "red", "blue")
+) + labs(
+  title ="Vaccinated QBs continue to dominate the field",
+  subtitle = "Vaccinated QBs account for nearly 30,000 more yards than the other groups",
+  caption="Source: Pro Football Reference | Noah Landis"
+)
+```
+Once again it looks like the vaccinated quarterbacks outperformed the other groups but once again you have to account for volume.
+
+In the end it does not look like there is any correlation between a players vaccination status and their on-field performance.
+
+Will it still be a point of debate next season? I guess we will have to wait and see.
+
+The code that generated this post and these graphs can be found [Here]().
