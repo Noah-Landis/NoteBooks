@@ -1,0 +1,120 @@
+---
+title: How Scottie Scheffler won the 2022 Masters Tournament
+author: Noah Landis
+date: '2022-04-29'
+slug: how-scottie-scheffler-won-the-2022-masters-tournament
+categories: []
+tags: []
+---
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(ggrepel)
+library(ggalt)
+library(stringr)
+```
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+Masters <- read_csv ("MastersTop10.csv")
+
+
+Top10 <- Masters %>% filter(`Finish Place` <= 10)
+```
+If you didn't know already Scottie Scheffler won the 2022 Masters Tournament held at Augusta National Golf Course. Coming into the weekend Scheffler was the number one rated golfer on the tour. Even though he held the top rank he did not have the best odds to win the Masters. At +1600 odds he was behind the likes of Jon Rahm, Dustin Johnson, Justin Thomas, and Cameron Smith.
+
+What did Scheffler do to propel himself to the green jacket? Lets find out.
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+ggplot() + 
+  geom_point(
+    data=Top10, 
+    aes(x=`Drive Acc %`, y=`Drive Dist`, size=Birdies)) +
+      geom_text_repel(data=Top10, aes(x=`Drive Acc %`, y=`Drive Dist`, label=Player),size=3,nudge_x = 1.2) + 
+  labs(
+    x="Drive Accuracy Percentage", 
+    y="Drive Distance", 
+    title="How important is the tee shot?", 
+    subtitle="Scheffler's Birdies help him rise to the top.", 
+    caption="Source: Masters.com | By Noah Landis"
+    ) +
+  theme_minimal()+ 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+    
+```
+While Scheffler did not lead the tournament in driving distance or accuracy he did have the second most number of birdies at 21. While he didn't dominate off the tee like McIlroy or Champ his short game made up for it. Scheffler averaged 1.53 putts a hole and hit 68% of greens in regulation.
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+WideMD <- Top10 %>%
+pivot_longer(cols = starts_with("R"), names_to = "Round", values_to = "Score")
+Scottie <-WideMD %>% filter(`Finish Place` == 1)
+Rory <- WideMD %>% filter(`Finish Place` == 2)
+```
+
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+ggplot() +
+geom_line(data=WideMD, aes(x=Round, y=Score, group=Player), color="grey") + geom_line(data=Scottie, aes(x=Round, y=Score, group=Player), color="red") + geom_line(data=Rory, aes(x=Round, y=Score, group=Player), color="blue") +
+  labs(
+    x="Round Number", 
+    y="Round Score", 
+    title="Can one round make the difference?", 
+    subtitle="Scheffler's strong first two days propel him to victory, McIlroy makes strong push during the final round.", 
+    caption="Source: Masters.com | By Noah Landis"
+    ) +
+  theme_minimal()+ 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+Scheffler got off to a fast start on the first two days of the tournamnet scoring 69 and 67 respectively to make the cut. Even with scoring 71 during his final two rounds he had built a big enough cushion to win by three strokes over McIlroy who was one stroke off from matching the course record with a 64 in his Sunday round.
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+Course <- read_csv ("MastersCA.csv")
+
+```
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+dumbbell1 <- Course %>% pivot_longer(cols=-Title, names_to = "Golfer", values_to="Score")
+
+ss <- dumbbell1 %>% filter(str_trim(Title, side=c("both")) == "S. Scheffler")
+ca <- dumbbell1 %>% filter(str_trim(Title, side=c("both")) == "Course Avg.")
+
+dumbell <- ss %>% 
+  inner_join(ca, by="Golfer") %>% 
+  rename(Name=1, Hole=2, Score=3, Delete=4, Average=5) %>% 
+  select(-Delete) %>%
+  mutate(Hole = as.numeric(gsub("H", "", Hole)))
+```
+
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+ggplot() + 
+  geom_dumbbell(
+    data=dumbell, 
+    aes(y=Hole, x=Score, xend=Average),
+    size = 2,
+    colour = "grey",
+    colour_x = "Gold",
+    colour_xend = "03C04A") +
+  scale_y_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)) +
+  labs(
+    x="Score", 
+    y="Hole", 
+    title="Playing against the course", 
+    subtitle="Scheffler (yellow) beats the course average (green) on every hole besides #10 and #18", 
+    caption="Source: Masters.com | By Noah Landis"
+    ) +
+  theme_minimal()+ 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) 
+```
+One of the biggest narratives at the Masters is the difficulty level of the course. Augusta National is regarded by many as the toughest course on the tour with the average score being close to 2 over par. Scheffler scored better than the course average on 16/18 holes. His worst hole being #18 where he had a double bogey during his final round. On the weekend he averaged a score of five on the final hole. Scheffler's best hole would have to be #17 where he beat the course average by .75 strokes.
+
+Scheffler hit consistently off the tee and paired it with his stellar short game to build a nice lead after two rounds. He kept his cool and didn't let the moment overwhelm him to earn the honor of putting on the green jacket.
